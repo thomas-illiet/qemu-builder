@@ -1,0 +1,28 @@
+name: Build Alpine QEMU Image
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Installer QEMU
+        run: brew install qemu
+
+      - name: Construire l'image Alpine
+        run: bash scripts/build_alpine.sh
+
+      - name: Vérifier l'image
+        run: ls -lh alpine-arm64.qcow2
+
+      - name: Upload artefact
+        uses: actions/upload-artifact@v3
+        with:
+          name: alpine-qemu-image
+          path: alpine-arm64.qcow2
