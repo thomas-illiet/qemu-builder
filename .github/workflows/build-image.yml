@@ -22,7 +22,7 @@ jobs:
         run: ls -lh alpine-arm64.qcow2
 
       - name: Upload artefact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: alpine-qemu-image
           path: alpine-arm64.qcow2
