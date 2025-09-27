@@ -12,17 +12,24 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Installer QEMU
-        run: brew install qemu
+      - name: Installer QEMU et utilitaires
+        run: |
+          brew install qemu
+          brew install virt-manager
+
+      - name: Télécharger qemu-user-static
+        run: |
+          curl -LO https://github.com/multiarch/qemu-user-static/releases/download/v8.1.1-2/qemu-x86_64-static.tar.gz
+          tar -xzf qemu-x86_64-static.tar.gz -C /usr/local/bin/
 
       - name: Construire l'image Alpine
         run: bash scripts/build_alpine.sh
 
       - name: Vérifier l'image
-        run: ls -lh alpine-arm64.qcow2
+        run: ls -lh alpine-amd64-docker.qcow2
 
       - name: Upload artefact
         uses: actions/upload-artifact@v4
         with:
           name: alpine-qemu-image
-          path: alpine-arm64.qcow2
+          path: alpine-amd64-docker.qcow2
