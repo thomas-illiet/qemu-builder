@@ -1,15 +1,11 @@
-name: Build Alpine qcow2
+name: Build Alpine qcow2 (rootless)
 
 on:
-  workflow_dispatch:  # lancement manuel
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build-qcow2:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -17,30 +13,20 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y qemu-utils qemu-system-x86 wget
+          sudo apt-get install -y libguestfs-tools wget
 
-      - name: Download Alpine ISO
+      - name: Download Alpine minirootfs
         run: |
-          wget https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/x86_64/alpine-standard-3.20.3-x86_64.iso -O alpine.iso
+          wget https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/x86_64/alpine-minirootfs-3.22.0-x86_64.tar.gz -O alpine-minirootfs.tar.gz
+          mkdir rootfs
+          tar -xpf alpine-minirootfs.tar.gz -C rootfs
 
-      - name: Create qcow2 image
+      - name: Create qcow2 from rootfs
         run: |
-          qemu-img create -f qcow2 alpine.qcow2 1G
-
-      - name: Boot QEMU and install Alpine (non-interactive)
-        run: |
-          # Ici il faut automatiser l’installation via kickstart, expect, ou cloud-init-like
-          # Exemple basique juste pour démarrer l’ISO (non persistant sans script d’install)
-          qemu-system-x86_64 \
-            -m 512 \
-            -cdrom alpine.iso \
-            -drive file=alpine.qcow2,format=qcow2 \
-            -nographic \
-            -boot d \
-            -no-reboot
+          virt-make-fs --format=qcow2 --type=ext4 rootfs alpine.qcow2
 
       - name: Upload qcow2 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: alpine-qcow2
+          name: alpine-rootless-qcow2
           path: alpine.qcow2
