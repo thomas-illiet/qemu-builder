@@ -1,30 +1,46 @@
-name: Build Alpine QEMU Image
+name: Build Alpine qcow2
 
 on:
+  workflow_dispatch:  # lancement manuel
   push:
-    branches: [main]
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
-  build:
-    runs-on: macos-latest
+  build-qcow2:
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Installer QEMU et utilitaires
+      - name: Install dependencies
         run: |
-          brew install qemu
-          sudo apt-get install -y libguestfs-tools qemu-utils curl
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils qemu-system-x86 wget
 
-      - name: Construire l'image Alpine
-        run: bash scripts/build_alpine.sh
+      - name: Download Alpine ISO
+        run: |
+          wget https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/x86_64/alpine-standard-3.20.3-x86_64.iso -O alpine.iso
 
-      - name: Vérifier l'image
-        run: ls -lh alpine-amd64-docker.qcow2
+      - name: Create qcow2 image
+        run: |
+          qemu-img create -f qcow2 alpine.qcow2 1G
 
-      - name: Upload artefact
+      - name: Boot QEMU and install Alpine (non-interactive)
+        run: |
+          # Ici il faut automatiser l’installation via kickstart, expect, ou cloud-init-like
+          # Exemple basique juste pour démarrer l’ISO (non persistant sans script d’install)
+          qemu-system-x86_64 \
+            -m 512 \
+            -cdrom alpine.iso \
+            -drive file=alpine.qcow2,format=qcow2 \
+            -nographic \
+            -boot d \
+            -no-reboot
+
+      - name: Upload qcow2 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: alpine-qemu-image
-          path: alpine-amd64-docker.qcow2
+          name: alpine-qcow2
+          path: alpine.qcow2
