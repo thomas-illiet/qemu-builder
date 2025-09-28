@@ -17,14 +17,6 @@ fi
 mkdir -p $ROOTFS_DIR
 tar -xzf $MINIROOTFS -C $ROOTFS_DIR
 
-# Entrer dans le rootfs et installer Docker
-sudo chroot $ROOTFS_DIR /bin/sh <<'EOF'
-set -e
-apk update
-apk add --no-cache docker openrc bash curl
-rc-update add docker boot
-EOF
-
 # Créer l'image QEMU et copier le rootfs
 qemu-img create -f qcow2 $IMAGE_NAME $IMAGE_SIZE
 
