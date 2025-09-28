@@ -15,7 +15,6 @@ jobs:
       - name: Installer QEMU et utilitaires
         run: |
           brew install qemu
-          brew install virt-manager
 
       - name: Construire l'image Alpine
         run: bash scripts/build_alpine.sh
