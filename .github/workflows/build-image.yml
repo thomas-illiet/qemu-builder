@@ -15,6 +15,7 @@ jobs:
       - name: Installer QEMU et utilitaires
         run: |
           brew install qemu
+          apt install libguestfs-tools
 
       - name: Construire l'image Alpine
         run: bash scripts/build_alpine.sh
